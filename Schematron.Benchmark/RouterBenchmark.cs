@@ -1,7 +1,5 @@
-﻿using System;
+﻿#if HAVE_CBR_FILES
 using System.Xml.Linq;
-using CBR_prototype;
-using CBR_prototype.Validator;
 
 namespace Schematron.Benchmark
 {
@@ -57,3 +55,4 @@ namespace Schematron.Benchmark
         }
     }
 }
+#endif

@@ -284,11 +284,71 @@ namespace SchemaTron.Test.Functional
             // bad value-of.@select
             // bad name.@path
             TestBadSchema(GetBadFile("bad_xpath_expressions.xml"), new string[] {
-                "Invalid XPath 1.0 context='/invalidXPath/rule/context[@': Expression must evaluate to a node-set.",
-                "Invalid XPath 1.0 test='/invalidXPath/assert/test[@': Expression must evaluate to a node-set.",
-                "Invalid XPath 1.0 path='name(/invalidXPath/name/path[@)']: Expression must evaluate to a node-set.",
-                "Invalid XPath 1.0 select='/invalidXPath/value-of/select[@': Expression must evaluate to a node-set.",
-                "Invalid XPath 1.0 test='not(/invalidXPath/report/test[@)': Expression must evaluate to a node-set.",
+                @"Invalid XPath 1.0 context='/invalidXPath/rule/context[@': syntax error, expecting '*'
+ NCName
+ QName
+ ELEMENT
+ ATTRIBUTE
+ TEXT
+ COMMENT
+ PROCESSING_INSTRUCTION
+ NODE
+ DOCUMENT_NODE
+ SCHEMA_ELEMENT
+ SCHEMA_ATTRIBUTE
+ at line 1 pos 29",
+                @"Invalid XPath 1.0 path='name(/invalidXPath/name/path[@)']: syntax error, expecting '*'
+ NCName
+ QName
+ ELEMENT
+ ATTRIBUTE
+ TEXT
+ COMMENT
+ PROCESSING_INSTRUCTION
+ NODE
+ DOCUMENT_NODE
+ SCHEMA_ELEMENT
+ SCHEMA_ATTRIBUTE
+ at line 1 pos 32",
+                @"Invalid XPath 1.0 select='/invalidXPath/value-of/select[@': syntax error, expecting '*'
+ NCName
+ QName
+ ELEMENT
+ ATTRIBUTE
+ TEXT
+ COMMENT
+ PROCESSING_INSTRUCTION
+ NODE
+ DOCUMENT_NODE
+ SCHEMA_ELEMENT
+ SCHEMA_ATTRIBUTE
+ at line 1 pos 32",
+                @"Invalid XPath 1.0 test='/invalidXPath/assert/test[@': syntax error, expecting '*'
+ NCName
+ QName
+ ELEMENT
+ ATTRIBUTE
+ TEXT
+ COMMENT
+ PROCESSING_INSTRUCTION
+ NODE
+ DOCUMENT_NODE
+ SCHEMA_ELEMENT
+ SCHEMA_ATTRIBUTE
+ at line 1 pos 28",
+                @"Invalid XPath 1.0 test='not(/invalidXPath/report/test[@)': syntax error, expecting '*'
+ NCName
+ QName
+ ELEMENT
+ ATTRIBUTE
+ TEXT
+ COMMENT
+ PROCESSING_INSTRUCTION
+ NODE
+ DOCUMENT_NODE
+ SCHEMA_ELEMENT
+ SCHEMA_ATTRIBUTE
+ at line 1 pos 33",
             });
         }
 
@@ -301,7 +361,7 @@ namespace SchemaTron.Test.Functional
         {
             TestBadSchema(GetBadFile("undefined_let.xml"), new string[] {
                 // NOTE: Notice the odd XPath message for using an undefined variable.
-                "Invalid XPath 1.0 test='$nonExistentLet': XsltContext is needed for this query because of an unknown function.",
+                "Invalid XPath 1.0 test='$nonExistentLet': Qname nonExistentLet is not defined",
             });
         }
 
@@ -351,39 +411,31 @@ namespace SchemaTron.Test.Functional
         {
             XDocument xSchema = Resources.Provider.LoadXmlDocument(schemaFileName);
 
-            try
+            var ex = Assert.Throws<SyntaxException>(() => Validator.Create(xSchema, badSchemaSettings));
+
+            List<string> expectedList = new List<string>(expectedMessages);
+            List<string> actualList = new List<string>(ex.UserMessages);
+            expectedList.Sort();
+            actualList.Sort();
+
+            // TODO: there is a problem that duplicate messages get squashed
+            // into a single message
+
+            List<string> missingExpected = expectedList.Except(actualList).ToList();
+            List<string> unexpectedActual = actualList.Except(expectedList).ToList();
+
+            string assertMessage = string.Empty;
+            if (missingExpected.Count > 0)
             {
-                Validator.Create(xSchema, badSchemaSettings);
+                assertMessage = string.Format("\nMissing expected messages:\n{0}",
+                    string.Join("\n", missingExpected));
             }
-            catch (SyntaxException ex)
+            if (unexpectedActual.Count > 0)
             {
-                List<string> expectedList = new List<string>(expectedMessages);
-                List<string> actualList = new List<string>(ex.UserMessages);
-                expectedList.Sort();
-                actualList.Sort();
-
-                // TODO: there is a problem that duplicate messages get squashed
-                // into a single message
-
-                List<string> missingExpected = expectedList.Except(actualList).ToList();
-                List<string> unexpectedActual = actualList.Except(expectedList).ToList();
-
-                string assertMessage = string.Empty;
-                if (missingExpected.Count > 0)
-                {
-                    assertMessage = string.Format("\nMissing expected messages:\n{0}",
-                        string.Join("\n", missingExpected));
-                }
-                if (unexpectedActual.Count > 0)
-                {
-                    assertMessage += string.Format("\nUnexpected actual messages:\n{0}",
-                        string.Join("\n", unexpectedActual));
-                }
-                Assert.True((missingExpected.Count + unexpectedActual.Count) == 0, assertMessage);
-                return;
+                assertMessage += string.Format("\nUnexpected actual messages:\n{0}",
+                    string.Join("\n", unexpectedActual));
             }
-
-            Assert.True(false, "A SyntaxException should be thrown.");
+            Assert.True((missingExpected.Count + unexpectedActual.Count) == 0, assertMessage);
         }
 
         public void TestGoodSchema(string schemaFileName)
@@ -396,7 +448,7 @@ namespace SchemaTron.Test.Functional
             }
             catch (SyntaxException ex)
             {
-                Assert.True(false, string.Format(
+                Assert.Fail(string.Format(
                     "Unexpected SyntaxException with messages:\n{0}",
                     string.Join("\n", ex.UserMessages)));
             }

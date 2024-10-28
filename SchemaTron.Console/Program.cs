@@ -26,7 +26,7 @@ namespace SchemaTron.Console
         bool areViolationsVerbose;
         bool isProcessingVerbose;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             Program program = new Program();
             try

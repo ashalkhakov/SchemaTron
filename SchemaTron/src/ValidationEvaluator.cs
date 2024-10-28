@@ -81,7 +81,7 @@ namespace SchemaTron
 
         private void ValidateRule(Pattern pattern, Rule rule)
         {
-            XPath2NodeIterator contextSet = this.xNavigator.XPath2Select(rule.CompiledContext);
+            XPath2NodeIterator contextSet = this.xNavigator.XPath2Select(rule.CompiledContext, null);
 
             while (contextSet.MoveNext())
             {
@@ -133,7 +133,7 @@ namespace SchemaTron
 
             // resolve object result
             bool isViolated = false;
-            switch (assert.CompiledTest.ReturnType)
+            switch (assert.CompiledTest.GetResultType(new Dictionary<XmlQualifiedName,object>()))
             {
                 case XPath2ResultType.Boolean:
                     {
@@ -193,13 +193,14 @@ namespace SchemaTron
             else
             {
                 List<string> diagValues = new List<string>();
+                var empty = new Dictionary<XmlQualifiedName, object>();
 
                 foreach (XPath2Expression xpeDiag in assert.CompiledDiagnostics)
                 {
                     object objDiagResult = context.XPath2Evaluate(xpeDiag);
 
                     // resolve diag result object
-                    switch (xpeDiag.ReturnType)
+                    switch (xpeDiag.GetResultType(empty))
                     {
                         case XPath2ResultType.Number:
                         case XPath2ResultType.String:

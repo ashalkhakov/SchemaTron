@@ -26,20 +26,20 @@
         public void ResolveExistingFile()
         {
             FileInclusionResolver resolver = new FileInclusionResolver();
-            Assert.DoesNotThrow(() => resolver.Resolve(@"..\..\Resources\basics_sch.xml"));
+            resolver.Resolve(@"..\..\..\Resources\basics_sch.xml");
         }
 
         [Fact]
         public void ResolveUri()
         {
             FileInclusionResolver resolver = new FileInclusionResolver();
-            Assert.DoesNotThrow(() => resolver.Resolve("http://www.w3schools.com/xml/note.xml"));
+            resolver.Resolve("http://www.w3schools.com/xml/note.xml");
         }
         
         [Fact]
         public void ResolveGzippedFileWithCustomResolver()
         {
-            string href = @"..\..\Resources\basics_sch.xml.gz";
+            string href = @"..\..\..\Resources\basics_sch.xml.gz";
             var resolver = new GzipInclusionResolver();
             XDocument xdoc = resolver.Resolve(href);
             Console.WriteLine(xdoc);

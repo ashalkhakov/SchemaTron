@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
-using CBR_prototype;
 using System.Diagnostics;
 
 namespace Schematron.Benchmark
@@ -15,9 +11,9 @@ namespace Schematron.Benchmark
     /// to validate an XML document and to match to document to a schema
     /// within a content-based router.
     /// </remarks>
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             Console.WriteLine("Date: {0}", DateTime.Now);
             Console.WriteLine();
@@ -30,7 +26,9 @@ namespace Schematron.Benchmark
 
             MeasureValidation();
 
+#if HAVE_CBR_FILES
             MeasureRouting();
+#endif
 
             stopwatch.Stop();
             Console.WriteLine("Total elapsed time: {0:0.###} sec", stopwatch.ElapsedMilliseconds / 1000.0);
@@ -64,6 +62,7 @@ namespace Schematron.Benchmark
                + " SchemaTron with partial validation can stop right at the first element.");
         }
 
+#if HAVE_CBR_FILES
         private static void MeasureRouting()
         {
             RouterBenchmark.MeasureRouting(
@@ -95,7 +94,7 @@ namespace Schematron.Benchmark
                 @"XML\CBR\message_invalid.xml",
                 "Message has invalid root element.");
         }
-
+#endif
         //private static void MeasureCreatingXSLTValidator()
         //{
         //    XDocument xSchema = XDocument.Load(@"XML\schema_envelope.xml");

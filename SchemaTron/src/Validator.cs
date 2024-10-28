@@ -22,6 +22,7 @@ using System.Xml.XPath;
 using SchemaTron.Preprocessing;
 using SchemaTron.SyntaxModel;
 using Wmhelp.XPath2;
+using Wmhelp.XPath2.AST;
 
 namespace SchemaTron
 {
@@ -281,9 +282,9 @@ namespace SchemaTron
 
                     try
                     {
-                        rule.CompiledContext = XPath2Expression.Compile(context, nsManager);
+                        rule.CompiledContext = XPath2Helper.CompileExpression(context, nsManager);
                     }
-                    catch (XPathException e)
+                    catch (XPath2Exception e)
                     {
                         messages.Add(String.Format("Invalid XPath 1.0 context='{0}': {1}", rule.Context, e.Message));
                     }
@@ -293,9 +294,9 @@ namespace SchemaTron
                     {
                         try
                         {
-                            assert.CompiledTest = XPath2Expression.Compile(assert.Test, nsManager);
+                            assert.CompiledTest = XPath2Helper.CompileExpression(assert.Test, nsManager);
                         }
-                        catch (XPathException e)
+                        catch (XPath2Exception e)
                         {
                             messages.Add(String.Format("Invalid XPath 1.0 test='{0}': {1}", assert.Test, e.Message));
                         }
@@ -309,7 +310,7 @@ namespace SchemaTron
                                 string diag = assert.Diagnostics[i];
                                 try
                                 {
-                                    assert.CompiledDiagnostics[i] = XPath2Expression.Compile(diag);
+                                    assert.CompiledDiagnostics[i] = XPath2Helper.CompileExpression(diag, nsManager);
                                 }
                                 catch (XPath2Exception e)
                                 {

@@ -10,8 +10,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("79216316-bd85-426b-bd93-269be2a4348e")]
-
-
-// Explicitly allow unit test assembly to access internal classes and members.
-[assembly: InternalsVisibleToAttribute("SchemaTron.Test")]
+[assembly: Guid("0fcd95f1-67d7-43fe-926b-70b90366e2d6")]
