@@ -276,15 +276,19 @@ namespace SchemaTron.Test.Functional
                 () => Validator.Create(xSchema, badSchemaSettings));
         }
 
-        [Fact]
-        public void BadXPathExpressions()
+        [Theory]
+        [InlineData("xpath1")]
+        [InlineData("xpath2")]
+        public void BadXPathExpressions(string schemaBinding)
         {
-            // bad rule.@context
-            // bad assert.@test or report.@test
-            // bad value-of.@select
-            // bad name.@path
-            TestBadSchema(GetBadFile("bad_xpath_expressions.xml"), new string[] {
-                @"Invalid XPath 1.0 context='/invalidXPath/rule/context[@': syntax error, expecting '*'
+            var file = GetBadFile($"bad_{schemaBinding}_expressions.xml");
+
+            string[] expectedMessages;
+
+            if (schemaBinding == "xpath2")
+            {
+                expectedMessages = new string[] {
+                @"Invalid XPath 2.0 context='/invalidXPath/rule/context[@': syntax error, expecting '*'
  NCName
  QName
  ELEMENT
@@ -297,7 +301,7 @@ namespace SchemaTron.Test.Functional
  SCHEMA_ELEMENT
  SCHEMA_ATTRIBUTE
  at line 1 pos 29",
-                @"Invalid XPath 1.0 path='name(/invalidXPath/name/path[@)']: syntax error, expecting '*'
+                @"Invalid XPath 2.0 path='name(/invalidXPath/name/path[@)']: syntax error, expecting '*'
  NCName
  QName
  ELEMENT
@@ -310,7 +314,7 @@ namespace SchemaTron.Test.Functional
  SCHEMA_ELEMENT
  SCHEMA_ATTRIBUTE
  at line 1 pos 32",
-                @"Invalid XPath 1.0 select='/invalidXPath/value-of/select[@': syntax error, expecting '*'
+                @"Invalid XPath 2.0 select='/invalidXPath/value-of/select[@': syntax error, expecting '*'
  NCName
  QName
  ELEMENT
@@ -323,7 +327,7 @@ namespace SchemaTron.Test.Functional
  SCHEMA_ELEMENT
  SCHEMA_ATTRIBUTE
  at line 1 pos 32",
-                @"Invalid XPath 1.0 test='/invalidXPath/assert/test[@': syntax error, expecting '*'
+                @"Invalid XPath 2.0 test='/invalidXPath/assert/test[@': syntax error, expecting '*'
  NCName
  QName
  ELEMENT
@@ -336,7 +340,7 @@ namespace SchemaTron.Test.Functional
  SCHEMA_ELEMENT
  SCHEMA_ATTRIBUTE
  at line 1 pos 28",
-                @"Invalid XPath 1.0 test='not(/invalidXPath/report/test[@)': syntax error, expecting '*'
+                @"Invalid XPath 2.0 test='not(/invalidXPath/report/test[@)': syntax error, expecting '*'
  NCName
  QName
  ELEMENT
@@ -349,19 +353,40 @@ namespace SchemaTron.Test.Functional
  SCHEMA_ELEMENT
  SCHEMA_ATTRIBUTE
  at line 1 pos 33",
-            });
+            };
+            }
+            else
+            {
+                expectedMessages = new string[] {
+                    "Invalid XPath 1.0 context='/invalidXPath/rule/context[@': Expression must evaluate to a node-set.",
+                    "Invalid XPath 1.0 path='name(/invalidXPath/name/path[@)']: Expression must evaluate to a node-set.",
+                    "Invalid XPath 1.0 select='/invalidXPath/value-of/select[@': Expression must evaluate to a node-set.",
+                    "Invalid XPath 1.0 test='/invalidXPath/assert/test[@': Expression must evaluate to a node-set.",
+                    "Invalid XPath 1.0 test='not(/invalidXPath/report/test[@)': Expression must evaluate to a node-set.",
+                };
+            }
+
+            // bad rule.@context
+            // bad assert.@test or report.@test
+            // bad value-of.@select
+            // bad name.@path
+            TestBadSchema(file, expectedMessages);
         }
 
         /// <summary>
         /// Note that references to variables in expressions are
         /// resolved by the query language binding, here XPath.
         /// </summary>
-        [Fact]
-        public void ReferenceToUndefinedLet()
+        [Theory]
+        [InlineData("xpath1", "Invalid XPath 1.0 test='$nonExistentLet': XsltContext is needed for this query because of an unknown function.")]
+        [InlineData("xpath2", "Invalid XPath 2.0 test='$nonExistentLet': Qname nonExistentLet is not defined")]
+        public void ReferenceToUndefinedLet(string queryBinding, string errorMessage)
         {
-            TestBadSchema(GetBadFile("undefined_let.xml"), new string[] {
+            var file = GetBadFile($"undefined_let_{queryBinding}.xml");
+
+            TestBadSchema(file, new string[] {
                 // NOTE: Notice the odd XPath message for using an undefined variable.
-                "Invalid XPath 1.0 test='$nonExistentLet': Qname nonExistentLet is not defined",
+                errorMessage,
             });
         }
 

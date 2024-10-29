@@ -10,5 +10,7 @@ namespace SchemaTron.SyntaxModel
         public IEnumerable<Namespace> Namespaces { get; set; }
 
         public IEnumerable<Pattern> Patterns { get; set; }
+
+        public QueryBindingType QueryBinding { get; set; }
     }
 }

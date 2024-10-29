@@ -1,12 +1,8 @@
 ﻿namespace SchemaTron.SyntaxModel.Test
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Xml;
     using System.Xml.Linq;
-    using SchemaTron;
     using SchemaTron.Test.Resources;
     using Xunit;
 

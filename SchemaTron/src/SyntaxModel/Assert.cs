@@ -14,7 +14,7 @@ namespace SchemaTron.SyntaxModel
 
         public string Test { get; set; }
 
-        public XPath2Expression CompiledTest { get; set; }
+        public int CompiledTest { get; set; }
 
         public string Message { get; set; }
        
@@ -22,6 +22,6 @@ namespace SchemaTron.SyntaxModel
 
         public string[] Diagnostics { get; set; }
 
-        public XPath2Expression[] CompiledDiagnostics { get; set; }
+        public int[] CompiledDiagnostics { get; set; }
     }
 }

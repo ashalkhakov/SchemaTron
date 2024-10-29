@@ -14,6 +14,8 @@
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\BadSchemas\bad_xpath2_expressions.xml" />
+    <None Remove="Resources\BadSchemas\undefined_let_xpath2.xml" />
     <None Remove="Resources\basics_sch.xml.gz" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +28,8 @@
     <EmbeddedResource Include="Resources\absrules_sch.xml" />
     <EmbeddedResource Include="Resources\absrules_xml.xml" />
     <EmbeddedResource Include="Resources\absrules_xml_invalid.xml" />
+    <EmbeddedResource Include="Resources\BadSchemas\bad_xpath2_expressions.xml" />
+    <EmbeddedResource Include="Resources\BadSchemas\undefined_let_xpath2.xml" />
     <EmbeddedResource Include="Resources\basics_sch.xml" />
     <Resource Include="Resources\basics_sch.xml.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -63,12 +67,12 @@
     <EmbeddedResource Include="Resources\GoodSchemas\good_name_element.xml" />
     <EmbeddedResource Include="Resources\GoodSchemas\no_default_phase.xml" />
     <EmbeddedResource Include="Resources\GoodSchemas\good_assert_or_report.xml" />
-    <EmbeddedResource Include="Resources\BadSchemas\bad_xpath_expressions.xml" />
+    <EmbeddedResource Include="Resources\BadSchemas\bad_xpath1_expressions.xml" />
     <EmbeddedResource Include="Resources\GoodSchemas\good_ancillary_elements.xml" />
     <EmbeddedResource Include="Resources\BadSchemas\infinite_recursion_include.xml" />
     <EmbeddedResource Include="Resources\GoodSchemas\good_let.xml" />
     <EmbeddedResource Include="Resources\GoodSchemas\good_diagnostics.xml" />
-    <EmbeddedResource Include="Resources\BadSchemas\undefined_let.xml" />
+    <EmbeddedResource Include="Resources\BadSchemas\undefined_let_xpath1.xml" />
   </ItemGroup>
   <ItemGroup>
 	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

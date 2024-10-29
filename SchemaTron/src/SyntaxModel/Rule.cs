@@ -13,7 +13,7 @@ namespace SchemaTron.SyntaxModel
 
         public string Context { get; set; }
 
-        public XPath2Expression CompiledContext { get; set; }
+        public int CompiledContext { get; set; }
 
         public IEnumerable<Assert> Asserts { get; set; }
     }

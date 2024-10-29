@@ -21,8 +21,6 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using SchemaTron.Preprocessing;
 using SchemaTron.SyntaxModel;
-using Wmhelp.XPath2;
-using Wmhelp.XPath2.AST;
 
 namespace SchemaTron
 {
@@ -43,11 +41,14 @@ namespace SchemaTron
         /// </summary>
         private Schema schema = null;
 
+        private IQueryBinding queryBinding;
+
         /// <summary>
         /// Private constructor to force instance creation via factory methods.
         /// </summary>
-        private Validator()
+        private Validator(IQueryBinding queryBinding)
         {
+            this.queryBinding = queryBinding;
         }
 
         /// <summary>
@@ -122,10 +123,10 @@ namespace SchemaTron
             Schema minimalizedSchema = SchemaDeserializer.Deserialize(xSchemaCopy, nsManager);
 
             // xpath preprocessing
-            CompileXPathExpressions(minimalizedSchema);
+            var queryBinding = CompileXPathExpressions(minimalizedSchema);
 
             // create instance
-            validator = new Validator();
+            validator = new Validator(queryBinding);
             validator.schema = minimalizedSchema;
             validator.MinSyntax = xSchemaCopy;
 
@@ -256,7 +257,7 @@ namespace SchemaTron
         /// <exception cref="SyntaxException">Thrown if any of the expressions
         /// does not conform to XPath 1.0. The exceptions may contain multiple
         /// error messages.</exception>
-        private static void CompileXPathExpressions(Schema schema)
+        private static IQueryBinding CompileXPathExpressions(Schema schema)
         {
             List<string> messages = new List<string>();
 
@@ -266,6 +267,14 @@ namespace SchemaTron
             {
                 nsManager.AddNamespace(ns.Prefix, ns.Uri);
             }
+
+            // resolve XPath binding
+            IQueryBinding queryBinding = schema.QueryBinding switch
+            {
+                QueryBindingType.XPath1_0 => new QueryBindingXPath(),
+                QueryBindingType.XPath2_0 => new QueryBindingXPath2(),
+                _ => throw new ArgumentOutOfRangeException(nameof(schema.QueryBinding), $"Unexpected query binding: {schema.QueryBinding}")
+            };
 
             // compile XPath expressions
             foreach (Pattern pattern in schema.Patterns)
@@ -282,11 +291,11 @@ namespace SchemaTron
 
                     try
                     {
-                        rule.CompiledContext = XPath2Helper.CompileExpression(context, nsManager);
+                        rule.CompiledContext = queryBinding.CompileExpression(context, nsManager);
                     }
-                    catch (XPath2Exception e)
+                    catch (QueryBindingException e)
                     {
-                        messages.Add(String.Format("Invalid XPath 1.0 context='{0}': {1}", rule.Context, e.Message));
+                        messages.Add(String.Format("Invalid {0} context='{1}': {2}", queryBinding.Name, rule.Context, e.Message));
                     }
 
                     // compile tests
@@ -294,33 +303,33 @@ namespace SchemaTron
                     {
                         try
                         {
-                            assert.CompiledTest = XPath2Helper.CompileExpression(assert.Test, nsManager);
+                            assert.CompiledTest = queryBinding.CompileExpression(assert.Test, nsManager);
                         }
-                        catch (XPath2Exception e)
+                        catch (QueryBindingException e)
                         {
-                            messages.Add(String.Format("Invalid XPath 1.0 test='{0}': {1}", assert.Test, e.Message));
+                            messages.Add(String.Format("Invalid {0} test='{1}': {2}", queryBinding.Name, assert.Test, e.Message));
                         }
 
                         // compile diagnostics
                         if (assert.Diagnostics.Length > 0)
                         {
-                            assert.CompiledDiagnostics = new XPath2Expression[assert.Diagnostics.Length];
+                            assert.CompiledDiagnostics = new int[assert.Diagnostics.Length];
                             for (int i = 0; i < assert.Diagnostics.Length; i++)
                             {
                                 string diag = assert.Diagnostics[i];
                                 try
                                 {
-                                    assert.CompiledDiagnostics[i] = XPath2Helper.CompileExpression(diag, nsManager);
+                                    assert.CompiledDiagnostics[i] = queryBinding.CompileExpression(diag, nsManager);
                                 }
-                                catch (XPath2Exception e)
+                                catch (QueryBindingException e)
                                 {
                                     if (assert.DiagnosticsIsValueOf[i])
                                     {
-                                        messages.Add(String.Format("Invalid XPath 1.0 select='{0}': {1}", diag, e.Message));
+                                        messages.Add(String.Format("Invalid {0} select='{1}': {2}", queryBinding.Name, diag, e.Message));
                                     }
                                     else
                                     {
-                                        messages.Add(String.Format("Invalid XPath 1.0 path='{0}']: {1}", diag, e.Message));
+                                        messages.Add(String.Format("Invalid {0} path='{1}']: {2}", queryBinding.Name, diag, e.Message));
                                     }
                                 }
                             }
@@ -334,6 +343,8 @@ namespace SchemaTron
             {
                 throw new SyntaxException(messages);
             }
+
+            return queryBinding;
         }
 
         /// <summary>
@@ -358,7 +369,7 @@ namespace SchemaTron
             {
                 throw new ArgumentNullException("xDocument - XML document instance");
             }
-            ValidationEvaluator evaluator = new ValidationEvaluator(this.schema, xDocument, fullValidation);
+            ValidationEvaluator evaluator = new ValidationEvaluator(this.schema, queryBinding, xDocument, fullValidation);
             return evaluator.Evaluate();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -38,6 +39,16 @@ namespace SchemaTron.SyntaxModel
             Schema schema = new Schema();
             schema.Namespaces = DeserializeNamespaces(xSchema.Root, nsManager);
             schema.Patterns = DeserializePatterns(xSchema.Root, nsManager);
+
+            var xQueryBinding = xSchema.Root.Attribute(XName.Get("queryBinding"));
+            if (xQueryBinding != null)
+            {
+                if (xQueryBinding.Value == "xpath2")
+                    schema.QueryBinding = QueryBindingType.XPath2_0;
+                else
+                    schema.QueryBinding = QueryBindingType.XPath1_0;
+            }
+
             return schema;
         }
 

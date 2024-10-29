@@ -436,38 +436,29 @@ namespace SchemaTron.Preprocessing
                 XName valueofName = XName.Get("value-of", Constants.ISONamespace);
                 foreach (XElement xEle in xRule.Descendants())
                 {
-                    // TODO:
-                    // Variable substitution should be separated for each element type.
-                    // The current code could potentially lead to incorrect behavior.
-                    // Consider:
-                    //   <assert select="...">
-                    //   <name test="...">
-                    //   <value-of path="...">
-                    if (xEle.Name == assertName || xEle.Name == reportName || xEle.Name == nameName || xEle.Name == valueofName)
+                    XAttribute att = null;
+                    if (xEle.Name == assertName)
+                    {
+                        att = xEle.Attribute(XName.Get("test"));
+                    }
+                    else if (xEle.Name == reportName)
+                    {
+                        att = xEle.Attribute(XName.Get("test"));
+                    }
+                    else if (xEle.Name == nameName)
+                    {
+                        att = xEle.Attribute(XName.Get("path"));
+                    }
+                    else if (xEle.Name == valueofName)
+                    {
+                        att = xEle.Attribute(XName.Get("select"));
+                    }
+
+                    if (att != null)
                     {
                         foreach (Let let in listLets)
                         {
-                            XAttribute testAtt = xEle.Attribute(XName.Get("test"));
-                            if (testAtt != null)
-                            {
-                                testAtt.Value = testAtt.Value.Replace(let.Name, let.Value);
-                            }
-                            else
-                            {
-                                XAttribute pathAtt = xEle.Attribute(XName.Get("path"));
-                                if (pathAtt != null)
-                                {
-                                    pathAtt.Value = pathAtt.Value.Replace(let.Name, let.Value);
-                                }
-                                else
-                                {
-                                    XAttribute selectAtt = xEle.Attribute(XName.Get("select"));
-                                    if (selectAtt != null)
-                                    {
-                                        selectAtt.Value = selectAtt.Value.Replace(let.Name, let.Value);
-                                    }
-                                }
-                            }
+                            att.Value = att.Value.Replace(let.Name, let.Value);
                         }
                     }
                 }
